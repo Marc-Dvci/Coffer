@@ -7,6 +7,11 @@
 [![Core coverage](https://img.shields.io/badge/decision%20core-100%25%20lines%20%C2%B7%2097%25%20branches-0b6b52.svg)](#tests)
 
 <p align="center">
+  <a href="https://youtu.be/Vo1AkO9CMMc"><img src="docs/film.png" width="820" alt="Play the Coffer walkthrough: a move from USDT into gold, signed in Nimiq Pay"></a><br>
+  <a href="https://youtu.be/Vo1AkO9CMMc">Watch the walkthrough (1 min 46 s)</a>
+</p>
+
+<p align="center">
   <img src="docs/screen-1-statement.png" width="270" alt="Coffer statement inside Nimiq Pay: a total in euros, then gold, euros, bitcoin, dollars, NIM and staked NIM, each with its amount, value and unit price">
   <img src="docs/screen-2-quote.png" width="270" alt="Move in screen: 50 USDT into gold, with the amount received, the minimum, the network fee in USDT and the gap to the CoinGecko price, above a Sign and move button">
   <img src="docs/screen-4-receipt.png" width="270" alt="Receipt: five completed steps, then Moved, with the USDT sold, the PAXG received, the fee, the new balance read from Polygon and links to the transaction and the order">
@@ -24,7 +29,7 @@ review a savings tool: every limit is code, and every receipt is read back from 
 | Live page | https://marc-dvci.github.io/Coffer/ (prices and quotes are live in any browser) |
 | Category | Save, Nimiq Pay Mini Apps Competition, Cycle III |
 | Built with | Nimiq Mini App SDK, both wallet providers, CoW Protocol on Polygon, viem, TypeScript, Vite |
-| Measured | Nimiq Pay 2.23.0 signed all four token approvals and an order; each one verified on Polygon mainnet ([record](docs/nimiq-pay-check.md)) |
+| Measured | Nimiq Pay 2.23.0 signed all four token approvals and an order; each one verified on Polygon mainnet ([record](https://github.com/Marc-Dvci/Coffer/blob/v1.0.0/docs/nimiq-pay-check.md)) |
 
 [What it does](#what-it-does) · [For judges](#for-judges) · [How it works](#how-it-works) · [Nimiq Pay integration](#how-nimiq-pay-is-used) · [Limits in code](#limits-in-code) · [Tests](#tests) · [Run it](#run-it)
 
@@ -70,11 +75,11 @@ wallet.
 
 | Criterion | Where it is answered |
 |---|---|
-| Functionality, reliability, usefulness (45) | One flow from quote to receipt: [`runMove`](src/core/move.ts#L103). Every way a move can stop has its own outcome and message ("Nothing moved"), covered by [browser tests](tests/e2e/coffer.spec.ts). An empty wallet still sees live prices and is told what to top up |
-| Nimiq Pay and Nimiq integration (25) | Both providers do the work: [`src/wallet/evm.ts`](src/wallet/evm.ts) (account, network, typed-data signing) and [`src/wallet/nimiq.ts`](src/wallet/nimiq.ts) (accounts, NIM balance over wallet and HTLC address, staking). NIM is a holding on the statement and can be staked. The phone's currency comes from `getHostFiat` |
+| Functionality, reliability, usefulness (45) | One flow from quote to receipt: [`runMove`](https://github.com/Marc-Dvci/Coffer/blob/v1.0.0/src/core/move.ts#L103). Every way a move can stop has its own outcome and message ("Nothing moved"), covered by [browser tests](https://github.com/Marc-Dvci/Coffer/blob/v1.0.0/tests/e2e/coffer.spec.ts). An empty wallet still sees live prices and is told what to top up |
+| Nimiq Pay and Nimiq integration (25) | Both providers do the work: [`src/wallet/evm.ts`](https://github.com/Marc-Dvci/Coffer/blob/v1.0.0/src/wallet/evm.ts) (account, network, typed-data signing) and [`src/wallet/nimiq.ts`](https://github.com/Marc-Dvci/Coffer/blob/v1.0.0/src/wallet/nimiq.ts) (accounts, NIM balance over wallet and HTLC address, staking). NIM is a holding on the statement and can be staked. The phone's currency comes from `getHostFiat` |
 | Real usage (15) | A move starts at $1 and a first stake at 100 NIM. Each move is a public order tagged `Coffer` in the CoW order book, listed under Activity |
 | Design and UX (10) | Assay-office hallmarks, one per holding, on a dark green ground. Each screen passes an axe-core WCAG 2.2 AA scan in the browser tests |
-| Works on the first try | Opening the app asks only for the two connection sheets. The network switch is requested at the first move. Record of the run inside Nimiq Pay: [docs/nimiq-pay-check.md](docs/nimiq-pay-check.md) |
+| Works on the first try | Opening the app asks only for the two connection sheets. The network switch is requested at the first move. Record of the run inside Nimiq Pay: [docs/nimiq-pay-check.md](https://github.com/Marc-Dvci/Coffer/blob/v1.0.0/docs/nimiq-pay-check.md) |
 
 ## How it works
 
@@ -85,11 +90,11 @@ A move is one CoW Protocol order with a pre-settlement call:
 1. The app reads the balance, allowance and nonce from Polygon through public RPC endpoints.
 2. The wallet signs an approval for the exact amount with `eth_signTypedData_v4`. USDT and EURe
    take an EIP-2612 `permit`. PAXG and WBTC take a Polygon bridge meta-transaction that wraps
-   `approve`. [`src/core/approval.ts`](src/core/approval.ts) builds both.
+   `approve`. [`src/core/approval.ts`](https://github.com/Marc-Dvci/Coffer/blob/v1.0.0/src/core/approval.ts) builds both.
 3. The signed approval becomes a hook inside the order document. The order book quotes the move
-   with that hook, and [`checkMove`](src/core/guard.ts#L62) applies the limits to the quote.
+   with that hook, and [`checkMove`](https://github.com/Marc-Dvci/Coffer/blob/v1.0.0/src/core/guard.ts#L62) applies the limits to the quote.
 4. The wallet signs the order: sell the amount typed, receive at least the quote less 0.5%, the
-   owner as the only receiver, valid for 20 minutes ([`src/core/order.ts`](src/core/order.ts#L71)).
+   owner as the only receiver, valid for 20 minutes ([`src/core/order.ts`](https://github.com/Marc-Dvci/Coffer/blob/v1.0.0/src/core/order.ts#L71)).
 5. A solver submits one transaction that runs the approval and settles the order. Its gas cost
    is the network fee shown on the quote, paid in the token sold.
 6. The app polls the order, then reads the buy-token balance from Polygon for the receipt.
@@ -111,7 +116,7 @@ book, the chain and the price source supply inputs, and the wallet supplies sign
 
 ## Limits in code
 
-[`LIMITS`](src/core/guard.ts#L4) are checked on the preview and again on the final quote, before the
+[`LIMITS`](https://github.com/Marc-Dvci/Coffer/blob/v1.0.0/src/core/guard.ts#L4) are checked on the preview and again on the final quote, before the
 order signature.
 
 | Rule | Value | Message |
@@ -154,17 +159,17 @@ Decision core coverage (`npm run coverage`), with a CI floor of 90% lines and 80
 
 | Claim | Code | Test |
 |---|---|---|
-| The approval covers exactly the amount moved | [`approval.ts`](src/core/approval.ts#L69) | `signs an approval for exactly the amount moved, to the CoW vault relayer` |
-| Each token's signing domain matches its contract on Polygon | [`tokens.ts`](src/core/tokens.ts#L138) | `hashes the $symbol domain to the separator its contract reports on Polygon` |
-| Anyone can submit the signed approval, so the user pays no gas | [`approval.ts`](src/core/approval.ts#L102) | Live: `$symbol accepts the signed approval when anyone submits it` |
-| The owner is the only receiver | [`order.ts`](src/core/order.ts#L71) | `submits an order signed by the owner, who is its only receiver` |
-| A quote outside the limits is refused before the order signature | [`guard.ts`](src/core/guard.ts#L62) | `refuses a quote that breaks a limit, before the order signature` |
-| A declined signature moves nothing | [`move.ts`](src/core/move.ts#L103) | `declining the signature in the wallet moves nothing` |
-| An unfilled order expires and says so | [`move.ts`](src/core/move.ts#L103) | `an order no solver fills expires and says nothing moved` |
-| Opening the app asks for no network switch | [`evm.ts`](src/wallet/evm.ts#L43) | `opening the app asks only to share the addresses, with no network switch` |
-| The receipt balance is read from the chain | [`move.ts`](src/core/move.ts#L103) | `reports what the order book executed and the balance read after settlement` |
-| Pools are ranked by score, then fee | [`staking.ts`](src/core/staking.ts#L50) | `puts the highest trust score first`, `breaks a score tie with the lower fee` |
-| The statement is valued in the phone's currency | [`statement.ts`](src/core/statement.ts#L40) | `the statement values every holding in the phone’s currency` |
+| The approval covers exactly the amount moved | [`approval.ts`](https://github.com/Marc-Dvci/Coffer/blob/v1.0.0/src/core/approval.ts#L69) | `signs an approval for exactly the amount moved, to the CoW vault relayer` |
+| Each token's signing domain matches its contract on Polygon | [`tokens.ts`](https://github.com/Marc-Dvci/Coffer/blob/v1.0.0/src/core/tokens.ts#L138) | `hashes the $symbol domain to the separator its contract reports on Polygon` |
+| Anyone can submit the signed approval, so the user pays no gas | [`approval.ts`](https://github.com/Marc-Dvci/Coffer/blob/v1.0.0/src/core/approval.ts#L102) | Live: `$symbol accepts the signed approval when anyone submits it` |
+| The owner is the only receiver | [`order.ts`](https://github.com/Marc-Dvci/Coffer/blob/v1.0.0/src/core/order.ts#L71) | `submits an order signed by the owner, who is its only receiver` |
+| A quote outside the limits is refused before the order signature | [`guard.ts`](https://github.com/Marc-Dvci/Coffer/blob/v1.0.0/src/core/guard.ts#L62) | `refuses a quote that breaks a limit, before the order signature` |
+| A declined signature moves nothing | [`move.ts`](https://github.com/Marc-Dvci/Coffer/blob/v1.0.0/src/core/move.ts#L103) | `declining the signature in the wallet moves nothing` |
+| An unfilled order expires and says so | [`move.ts`](https://github.com/Marc-Dvci/Coffer/blob/v1.0.0/src/core/move.ts#L103) | `an order no solver fills expires and says nothing moved` |
+| Opening the app asks for no network switch | [`evm.ts`](https://github.com/Marc-Dvci/Coffer/blob/v1.0.0/src/wallet/evm.ts#L43) | `opening the app asks only to share the addresses, with no network switch` |
+| The receipt balance is read from the chain | [`move.ts`](https://github.com/Marc-Dvci/Coffer/blob/v1.0.0/src/core/move.ts#L103) | `reports what the order book executed and the balance read after settlement` |
+| Pools are ranked by score, then fee | [`staking.ts`](https://github.com/Marc-Dvci/Coffer/blob/v1.0.0/src/core/staking.ts#L50) | `puts the highest trust score first`, `breaks a score tie with the lower fee` |
+| The statement is valued in the phone's currency | [`statement.ts`](https://github.com/Marc-Dvci/Coffer/blob/v1.0.0/src/core/statement.ts#L40) | `the statement values every holding in the phone’s currency` |
 
 ## Run it
 
