@@ -211,7 +211,7 @@ function renderQuote(): void {
     ${
       state.evm
         ? `<button class="primary" id="sign" ${canSign ? '' : 'disabled'}>Sign and move</button>
-           <p class="note">You sign, a CoW Protocol solver settles and pays the gas. No POL needed. The ${buy.symbol} arrives at your own address, ${shortAddress(state.evm.owner)}.</p>`
+           <p class="note">Nimiq Pay asks you to confirm up to two signatures: the approval for this exact amount, then the order. A CoW Protocol solver settles it and pays the gas, so no POL is needed. The ${buy.symbol} arrives at your own address, ${shortAddress(state.evm.owner)}.</p>`
         : `<a class="secondary" href="${OPEN_IN_PAY}">Open in Nimiq Pay to move savings</a>
            <p class="note">This is a live price. Signing happens in Nimiq Pay, with the wallet that holds your USDT.</p>`
     }`
