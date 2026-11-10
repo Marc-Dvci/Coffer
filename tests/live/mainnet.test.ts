@@ -47,7 +47,7 @@ describe('Polygon mainnet', () => {
 
 describe('CoW order book on Polygon', () => {
   it.each(SAVINGS.map((t) => [t.symbol, t] as const))('quotes 25 USDT into %s within 1.5% of the reference price', async (_s, token) => {
-    const prices = await fetchPrices()
+    const { table: prices } = await fetchPrices()
     const quote = await fetchQuote({
       sellToken: USDT.address,
       buyToken: token.address,

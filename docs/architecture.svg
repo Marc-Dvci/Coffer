@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="560" viewBox="0 0 860 560" font-family="Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+  <rect width="860" height="560" fill="#ffffff"/>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#1f2a27"/></marker>
+  </defs>
+  <g fill="none" stroke="#1f2a27" stroke-width="1.5">
+    <rect x="20" y="20" width="820" height="250" rx="6" stroke="#0b6b52" stroke-width="2"/>
+    <rect x="44" y="64" width="230" height="182" rx="4"/>
+    <rect x="315" y="64" width="230" height="182" rx="4" stroke="#b07d12" stroke-width="2"/>
+    <rect x="586" y="64" width="230" height="182" rx="4"/>
+    <rect x="20" y="330" width="250" height="100" rx="4"/>
+    <rect x="305" y="330" width="250" height="100" rx="4"/>
+    <rect x="590" y="330" width="250" height="100" rx="4"/>
+    <rect x="20" y="470" width="250" height="70" rx="4"/>
+    <rect x="590" y="470" width="250" height="70" rx="4"/>
+  </g>
+  <g fill="#1f2a27" font-size="15">
+    <text x="36" y="46" font-size="16" font-weight="700" fill="#0b6b52">Nimiq Pay on the user's phone</text>
+    <text x="60" y="90" font-weight="700">Wallet (keys stay here)</text>
+    <text x="60" y="116">window.ethereum</text>
+    <text x="60" y="136" font-size="13.5">eth_requestAccounts</text>
+    <text x="60" y="154" font-size="13.5">wallet_switchEthereumChain</text>
+    <text x="60" y="172" font-size="13.5">eth_signTypedData_v4</text>
+    <text x="60" y="198">window.nimiq</text>
+    <text x="60" y="218" font-size="13.5">listAccounts, getBalance</text>
+    <text x="60" y="236" font-size="13.5">sendNewStakerTransaction</text>
+
+    <text x="331" y="90" font-weight="700" fill="#7a5600">Decision core (src/core)</text>
+    <text x="331" y="116" font-size="14">Signed approval for the</text>
+    <text x="331" y="134" font-size="14">exact amount</text>
+    <text x="331" y="160" font-size="14">Order: owner is the receiver</text>
+    <text x="331" y="186" font-size="14">Limits: $1 minimum, 3% fee,</text>
+    <text x="331" y="204" font-size="14">1.5% from reference price</text>
+    <text x="331" y="230" font-size="14">Statement and valuation</text>
+
+    <text x="602" y="90" font-weight="700">Screens (src/main.ts)</text>
+    <text x="602" y="116" font-size="14">Statement</text>
+    <text x="602" y="138" font-size="14">Move in, Bring back</text>
+    <text x="602" y="160" font-size="14">Signing steps and receipt</text>
+    <text x="602" y="182" font-size="14">NIM that earns</text>
+    <text x="602" y="204" font-size="14">Activity</text>
+
+    <text x="36" y="356" font-weight="700">CoW Protocol order book</text>
+    <text x="36" y="380" font-size="14">Quote, signed order, status</text>
+    <text x="36" y="400" font-size="14">api.cow.fi/polygon</text>
+    <text x="321" y="356" font-weight="700">Polygon mainnet</text>
+    <text x="321" y="380" font-size="14">Balances, allowances, nonces</text>
+    <text x="321" y="400" font-size="14">USDT, PAXG, EURe, WBTC</text>
+    <text x="606" y="356" font-weight="700">Nimiq mainnet</text>
+    <text x="606" y="380" font-size="14">NIM balance, staker record,</text>
+    <text x="606" y="400" font-size="14">validator pools</text>
+    <text x="36" y="496" font-weight="700">Solver</text>
+    <text x="36" y="518" font-size="14">Runs the approval, settles, pays gas</text>
+    <text x="606" y="496" font-weight="700">CoinGecko</text>
+    <text x="606" y="518" font-size="14">Reference prices: USD, EUR, CRC</text>
+  </g>
+  <g stroke="#1f2a27" stroke-width="1.5" fill="none" marker-end="url(#a)">
+    <path d="M315 150H278" marker-start="url(#a)"/>
+    <path d="M586 150H549" marker-start="url(#a)"/>
+    <path d="M360 246V300H145V326"/>
+    <path d="M430 246V326"/>
+    <path d="M500 246V300H715V326"/>
+    <path d="M145 430V466"/>
+    <path d="M270 505H400V434"/>
+    <path d="M590 505H572V286H524V250"/>
+  </g>
+  <g fill="#1f2a27" font-size="12.5">
+    <text x="152" y="452">open orders</text>
+    <text x="282" y="498">settlement</text>
+  </g>
+</svg>

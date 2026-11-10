@@ -5,7 +5,7 @@ import { formatFiat, formatPercent, formatPrice, formatUnitsFixed, parseAmount, 
 import { checkMove, deviationBps, LIMITS, refusalText, toNumber } from './core/guard'
 import { type MoveDeps, type MoveResult, type MoveStep, previewQuote, runMove } from './core/move'
 import { minimumReceived, type Quote } from './core/order'
-import { fetchPrices, PRICE_SOURCE, type PriceTable, statementFiat } from './core/prices'
+import { fetchPrices, type PriceSource, type PriceTable, statementFiat } from './core/prices'
 import { fetchValidators, MIN_STAKE_LUNA, type Staker, type Validator } from './core/staking'
 import { type Balances, buildStatement, NIM_DECIMALS, type StatementRow } from './core/statement'
 import { ALL_TOKENS, type HoldingId, type Token, tokenById, USDT } from './core/tokens'
@@ -30,6 +30,7 @@ const state = {
   balances: { tokens: {}, nimLuna: 0n, stakedLuna: 0n } as Balances,
   staker: null as Staker | null,
   prices: null as PriceTable | null,
+  priceSource: 'CoinGecko' as PriceSource,
   validators: [] as Validator[],
   validator: '',
   orders: null as OrderStatus[] | null,
@@ -45,7 +46,7 @@ const state = {
 }
 
 const app = document.getElementById('app')!
-const fiat = () => statementFiat(hostFiat())
+const fiat = () => statementFiat(hostFiat(), state.prices)
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
 const priceUsd = (t: Token) => state.prices?.[t.id].USD
 
@@ -82,7 +83,9 @@ async function refreshBalances(): Promise<void> {
 
 async function refreshPrices(): Promise<void> {
   try {
-    state.prices = await fetchPrices()
+    const prices = await fetchPrices()
+    state.prices = prices.table
+    state.priceSource = prices.source
   } catch {
     /* the statement shows amounts without values until prices answer */
   }
@@ -221,7 +224,7 @@ function renderQuote(): void {
       <div><dt>You receive about</dt><dd><b>${formatUnitsFixed(q.buyAmount, buy.decimals, buy.display)} ${buy.symbol}</b></dd></div>
       <div><dt>At least</dt><dd>${formatUnitsFixed(min, buy.decimals, buy.display)} ${buy.symbol}</dd></div>
       <div><dt>Network fee, paid in ${sell.symbol}</dt><dd>${formatUnitsFixed(q.feeAmount, sell.decimals, Math.min(sell.decimals, 6))} ${sell.symbol}</dd></div>
-      <div><dt>Against the ${PRICE_SOURCE} price</dt><dd>${priceUsd(buy) === undefined ? 'n/a' : `${dev > 0 ? '-' : '+'}${(Math.abs(dev) / 100).toFixed(2)}%`}</dd></div>
+      <div><dt>Against the ${state.priceSource} price</dt><dd>${priceUsd(buy) === undefined ? 'n/a' : `${dev > 0 ? '-' : '+'}${(Math.abs(dev) / 100).toFixed(2)}%`}</dd></div>
     </dl>
     ${refusal ? `<p class="refusal" role="alert">${esc(refusal)}</p>` : ''}
     ${
@@ -360,7 +363,7 @@ function statementView(): string {
         )
         .join('')}
     </ul>
-    <p class="note">Values use ${PRICE_SOURCE} prices in ${f}. Balances are read from Polygon and from the Nimiq network.</p>`
+    <p class="note">Values use ${state.priceSource} prices in ${f}. Balances are read from Polygon and from the Nimiq network.</p>`
 }
 
 function priceLine(r: StatementRow, f: ReturnType<typeof fiat>): string {
@@ -384,7 +387,7 @@ function holdingView(): string {
     <dl class="facts">
       <div><dt>You hold</dt><dd><b>${formatUnitsFixed(held, t.decimals, t.display)} ${t.symbol}</b></dd></div>
       <div><dt>Worth</dt><dd>${formatFiat(price === undefined ? undefined : toNumber(held, t.decimals) * price, f)}</dd></div>
-      <div><dt>Price, ${PRICE_SOURCE}</dt><dd>${formatFiat(price, f)} per ${t.symbol}</dd></div>
+      <div><dt>Price, ${state.priceSource}</dt><dd>${formatFiat(price, f)} per ${t.symbol}</dd></div>
       <div><dt>Issuer</dt><dd>${t.issuer}</dd></div>
     </dl>
     <p class="note">${t.unit} The price moves both ways.</p>
