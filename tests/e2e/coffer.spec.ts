@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright'
 import { expect, type Page, test } from '@playwright/test'
 import { decodeFunctionData } from 'viem'
 import { APPROVAL_ABI } from '../../src/core/approval'
+import { shortAddress } from '../../src/core/format'
 import { GOLD, USDT } from '../../src/core/tokens'
 import { account, COW_VAULT_RELAYER, installWorld } from './world'
 
@@ -55,7 +56,7 @@ test.describe('inside Nimiq Pay', () => {
   test('opening the app asks only to share the addresses, with no network switch', async ({ page }) => {
     const world = await installWorld(page, { insidePay: true })
     await page.goto('./')
-    await expect(page.getByText('0x7099…79C8')).toBeVisible()
+    await expect(page.getByText(shortAddress(account.address))).toBeVisible()
     expect(world.prompts).toEqual(['eth_requestAccounts'])
   })
 
@@ -77,7 +78,7 @@ test.describe('inside Nimiq Pay', () => {
     await expect(page.getByText('Not connected')).toBeVisible()
     await expectAccessible(page)
     await page.getByRole('button', { name: 'Connect wallet' }).click()
-    await expect(page.getByText('0x7099…79C8')).toBeVisible()
+    await expect(page.getByText(shortAddress(account.address))).toBeVisible()
     await expect(page.getByRole('button', { name: 'Connect wallet' })).toHaveCount(0)
   })
 

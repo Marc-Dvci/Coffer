@@ -15,8 +15,8 @@ import { buildOrderTypedData, type Order } from '../../src/core/order'
 import { ALL_TOKENS, COW_VAULT_RELAYER } from '../../src/core/tokens'
 
 /** A well-known test key. It signs for real, so every signature the app asks for is checked. */
-export const TEST_KEY = '0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d'
-export const account = privateKeyToAccount(TEST_KEY)
+/** A wallet for the tests only, derived from a phrase. It holds nothing on any chain. */
+export const account = privateKeyToAccount(keccak256(toBytes('coffer browser test wallet')))
 export const NIM_WALLET = 'NQ07 0000 0000 0000 0000 0000 0000 0000 0001'
 export const NIM_HTLC = 'NQ07 0000 0000 0000 0000 0000 0000 0000 0002'
 

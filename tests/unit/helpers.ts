@@ -1,4 +1,4 @@
-import type { Address, Hex, hashTypedData } from 'viem'
+import { type Address, type Hex, type hashTypedData, keccak256, toBytes } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import type { TypedData } from '../../src/core/approval'
 import type { Fetch, OrderState, OrderStatus } from '../../src/core/cow'
@@ -6,8 +6,8 @@ import type { MoveDeps } from '../../src/core/move'
 import type { Order, Quote } from '../../src/core/order'
 import { GOLD, type HoldingId, USDT } from '../../src/core/tokens'
 
-export const TEST_KEY: Hex = '0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d'
-export const account = privateKeyToAccount(TEST_KEY)
+/** A wallet for the tests only, derived from a phrase. It holds nothing on any chain. */
+export const account = privateKeyToAccount(keccak256(toBytes('coffer unit test wallet')))
 export const owner: Address = account.address
 
 /** Unix seconds of the fake clock at the start of every test. */
