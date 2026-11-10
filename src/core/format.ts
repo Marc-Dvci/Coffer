@@ -31,6 +31,12 @@ export function formatFiat(value: number | undefined, fiat: FiatCode): string {
   return `${value < 0 ? '-' : ''}${FIAT_SIGN[fiat]}${grouped}${frac ? `.${frac}` : ''}`
 }
 
+/** A unit price. Prices under one unit of currency keep three significant digits. */
+export function formatPrice(price: number | undefined, fiat: FiatCode): string {
+  if (price === undefined || !Number.isFinite(price) || price >= 1 || price <= 0) return formatFiat(price, fiat)
+  return `${FIAT_SIGN[fiat]}${Number(price.toPrecision(3))}`
+}
+
 export function formatPercent(share: number): string {
   return `${(share * 100).toFixed(share > 0 && share < 0.1 ? 1 : 0)}%`
 }

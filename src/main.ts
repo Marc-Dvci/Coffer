@@ -1,7 +1,7 @@
 import type { Address } from 'viem'
 import './ui/style.css'
 import { COW_EXPLORER, fetchOrder, fetchOrders, fetchQuote, fetchTradeHashes, type OrderStatus, submitOrder } from './core/cow'
-import { formatFiat, formatPercent, formatUnitsFixed, parseAmount, shortAddress } from './core/format'
+import { formatFiat, formatPercent, formatPrice, formatUnitsFixed, parseAmount, shortAddress } from './core/format'
 import { checkMove, deviationBps, LIMITS, refusalText, toNumber } from './core/guard'
 import { type MoveDeps, type MoveResult, type MoveStep, previewQuote, runMove } from './core/move'
 import { minimumReceived, type Quote } from './core/order'
@@ -367,8 +367,7 @@ function priceLine(r: StatementRow, f: ReturnType<typeof fiat>): string {
   const id = r.id === 'staked' ? 'nim' : r.id
   const p = state.prices?.[id][f]
   if (p === undefined || id === 'usdt') return ''
-  const shown = p < 1 ? `${p.toPrecision(3)} ${f}` : formatFiat(p, f)
-  return `<span class="sub">${shown} each</span>`
+  return `<span class="sub">${formatPrice(p, f)} each</span>`
 }
 
 function holdingView(): string {

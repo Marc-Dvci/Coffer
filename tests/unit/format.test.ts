@@ -1,6 +1,6 @@
 import fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
-import { formatFiat, formatPercent, formatUnitsFixed, parseAmount, shortAddress } from '../../src/core/format'
+import { formatFiat, formatPercent, formatPrice, formatUnitsFixed, parseAmount, shortAddress } from '../../src/core/format'
 
 describe('parseAmount', () => {
   it.each([
@@ -76,6 +76,20 @@ describe('formatFiat', () => {
 
   it.each([undefined, Number.NaN, Number.POSITIVE_INFINITY])('writes %s as n/a', (value) => {
     expect(formatFiat(value, 'USD')).toBe('n/a')
+  })
+})
+
+describe('formatPrice', () => {
+  it.each([
+    { price: 4048.83, fiat: 'USD', text: '$4,048.83' },
+    { price: 1, fiat: 'EUR', text: '€1.00' },
+    { price: 0.000257, fiat: 'USD', text: '$0.000257' },
+    { price: 0.00022061, fiat: 'EUR', text: '€0.000221' },
+    { price: 0.5, fiat: 'USD', text: '$0.5' },
+    { price: 0.13, fiat: 'CRC', text: '₡0.13' },
+    { price: undefined, fiat: 'USD', text: 'n/a' },
+  ] as const)('writes a unit price of $price $fiat as $text', ({ price, fiat, text }) => {
+    expect(formatPrice(price, fiat)).toBe(text)
   })
 })
 
