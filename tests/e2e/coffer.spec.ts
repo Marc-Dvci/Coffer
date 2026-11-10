@@ -52,6 +52,45 @@ test.describe('inside Nimiq Pay', () => {
     await expectAccessible(page)
   })
 
+  test('opening the app asks only to share the addresses, with no network switch', async ({ page }) => {
+    const world = await installWorld(page, { insidePay: true })
+    await page.goto('./')
+    await expect(page.getByText('0x7099…79C8')).toBeVisible()
+    expect(world.prompts).toEqual(['eth_requestAccounts'])
+  })
+
+  test('a move switches the wallet to Polygon before the first signature', async ({ page }) => {
+    const world = await installWorld(page, { insidePay: true })
+    await page.goto('./')
+    await openGold(page, '25')
+    await page.getByRole('button', { name: 'Sign and move' }).click()
+    await expect(page.getByText('Moved.')).toBeVisible({ timeout: 20_000 })
+    expect(world.prompts).toEqual(['eth_requestAccounts', 'wallet_switchEthereumChain'])
+    expect(world.signed).toEqual(['Permit', 'Order'])
+  })
+
+  test('a declined connection leaves a Connect wallet button that connects on the next try', async ({ page }) => {
+    const world = await installWorld(page, { insidePay: true })
+    world.rejectConnect = true
+    await page.goto('./')
+    await expect(page.getByText('The connection was declined in the wallet.')).toBeVisible()
+    await expect(page.getByText('Not connected')).toBeVisible()
+    await expectAccessible(page)
+    await page.getByRole('button', { name: 'Connect wallet' }).click()
+    await expect(page.getByText('0x7099…79C8')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Connect wallet' })).toHaveCount(0)
+  })
+
+  test('a wallet with no USDT is told to top up and still sees a live price', async ({ page }) => {
+    const world = await installWorld(page, { insidePay: true })
+    world.balances.usdt = 0n
+    await page.goto('./')
+    await openGold(page, '5')
+    await expect(page.getByText('Top up USDT in Nimiq Pay, then move it here.')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Sign and move' })).toBeDisabled()
+    await expectAccessible(page)
+  })
+
   test('moving USDT into gold takes two signatures and ends on a receipt read from the chain', async ({ page }) => {
     const world = await installWorld(page, { insidePay: true })
     await page.goto('./')

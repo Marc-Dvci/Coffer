@@ -31,19 +31,22 @@ export function evmProvider(): Eip1193 | undefined {
   return typeof window === 'undefined' ? undefined : window.ethereum
 }
 
-/** Asks the wallet for its account and puts it on Polygon. */
+/** Asks the wallet for its account. */
 export async function connectEvm(provider: Eip1193): Promise<Address> {
   const accounts = (await provider.request({ method: 'eth_requestAccounts' })) as string[]
   const first = accounts[0]
   if (!first) throw new Error('The wallet returned no account')
-  const chainId = (await provider.request({ method: 'eth_chainId' })) as string
-  if (chainId.toLowerCase() !== POLYGON_HEX) {
-    await provider.request({
-      method: 'wallet_switchEthereumChain',
-      params: [{ chainId: POLYGON_HEX }],
-    })
-  }
   return getAddress(first)
+}
+
+/** Puts the wallet on Polygon, which it must be on to sign a move. */
+export async function ensurePolygon(provider: Eip1193): Promise<void> {
+  const chainId = (await provider.request({ method: 'eth_chainId' })) as string
+  if (chainId.toLowerCase() === POLYGON_HEX) return
+  await provider.request({
+    method: 'wallet_switchEthereumChain',
+    params: [{ chainId: POLYGON_HEX }],
+  })
 }
 
 export async function signTypedData(

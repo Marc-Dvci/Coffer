@@ -9,7 +9,7 @@ import { fetchPrices, PRICE_SOURCE, type PriceTable, statementFiat } from './cor
 import { fetchValidators, MIN_STAKE_LUNA, type Staker, type Validator } from './core/staking'
 import { type Balances, buildStatement, NIM_DECIMALS, type StatementRow } from './core/statement'
 import { ALL_TOKENS, type HoldingId, type Token, tokenById, USDT } from './core/tokens'
-import { allowance, balanceOf, connectEvm, type Eip1193, evmProvider, nonce, POLYGONSCAN_TX, signTypedData, tokenBalances } from './wallet/evm'
+import { allowance, balanceOf, connectEvm, ensurePolygon, type Eip1193, evmProvider, nonce, POLYGONSCAN_TX, signTypedData, tokenBalances } from './wallet/evm'
 import { connectNimiq, hostFiat, insideNimiqPay, nimBalance, type NimiqSession, nimStaker, stake } from './wallet/nimiq'
 import { mark, MARK_COLOR, type MarkId } from './ui/marks'
 
@@ -41,6 +41,7 @@ const state = {
   stakeNote: '',
   stakeHash: '',
   connectNote: '',
+  connecting: false,
 }
 
 const app = document.getElementById('app')!
@@ -87,19 +88,34 @@ async function refreshPrices(): Promise<void> {
   }
 }
 
+function isDeclined(err: unknown): boolean {
+  const e = err as { code?: number; message?: string }
+  return e?.code === 4001 || /reject|denied|cancel/i.test(e?.message ?? '')
+}
+
+function walletMessage(err: unknown): string {
+  return isDeclined(err)
+    ? 'The connection was declined in the wallet.'
+    : ((err as { message?: string })?.message ?? 'The wallet did not answer.')
+}
+
 async function connect(): Promise<void> {
+  if (state.connecting) return
+  state.connecting = true
   state.connectNote = ''
+  render()
   const provider = evmProvider()
   try {
-    if (provider) state.evm = { provider, owner: await connectEvm(provider) }
+    if (provider && !state.evm) state.evm = { provider, owner: await connectEvm(provider) }
   } catch (err) {
-    state.connectNote = (err as Error).message
+    state.connectNote = walletMessage(err)
   }
   try {
-    state.nimiq = await connectNimiq()
+    if (!state.nimiq) state.nimiq = await connectNimiq()
   } catch (err) {
-    state.connectNote = (err as Error).message
+    state.connectNote = walletMessage(err)
   }
+  state.connecting = false
   await refreshBalances()
   render()
 }
@@ -211,7 +227,7 @@ function renderQuote(): void {
     ${
       state.evm
         ? `<button class="primary" id="sign" ${canSign ? '' : 'disabled'}>Sign and move</button>
-           <p class="note">Nimiq Pay asks you to confirm up to two signatures: the approval for this exact amount, then the order. A CoW Protocol solver settles it and pays the gas, so no POL is needed. The ${buy.symbol} arrives at your own address, ${shortAddress(state.evm.owner)}.</p>`
+           <p class="note">Nimiq Pay shows up to two “Sign Message” sheets. The first, type ${sell.approval === 'permit' ? 'Permit' : 'MetaTransaction'}, lets CoW Protocol take exactly this amount of ${sell.symbol} and nothing more. The second, type Order, is the move itself, with you as the receiver. A solver settles it and pays the gas, so no POL is needed. The ${buy.symbol} arrives at your own address, ${shortAddress(state.evm.owner)}.</p>`
         : `<a class="secondary" href="${OPEN_IN_PAY}">Open in Nimiq Pay to move savings</a>
            <p class="note">This is a live price. Signing happens in Nimiq Pay, with the wallet that holds your USDT.</p>`
     }`
@@ -247,9 +263,12 @@ async function startMove(): Promise<void> {
     setSteps(labels, index)
   }
   try {
+    await ensurePolygon(state.evm.provider)
     state.result = await runMove(moveDeps(), { owner: state.evm.owner, sell, buy, amount }, onStep)
   } catch (err) {
-    state.result = { outcome: 'rejected', reason: (err as Error).message }
+    state.result = isDeclined(err)
+      ? { outcome: 'declined', at: 'approval-signature' }
+      : { outcome: 'rejected', reason: (err as Error).message }
   }
   if (state.result.outcome === 'settled') setSteps(labels, labels.length)
   state.busy = false
@@ -301,10 +320,20 @@ function rowSub(row: StatementRow): string {
   return `${row.amount.toLocaleString('en-US', { maximumFractionDigits: t.display })} ${t.symbol}`
 }
 
+function connectBanner(): string {
+  const inPay = insideNimiqPay()
+  if (state.evm !== null && (state.nimiq !== null || !inPay)) return ''
+  if (inPay) {
+    return state.connecting
+      ? `<p class="banner">Nimiq Pay is asking to share your addresses with Coffer. Coffer reads balances with them and moves nothing without your signature.</p>`
+      : `<p class="banner">Coffer shows your holdings once you share your addresses.</p><button class="primary" id="connect">Connect wallet</button>`
+  }
+  return `<p class="banner">Prices and quotes on this page are live. To see your own holdings and move savings, <a href="${OPEN_IN_PAY}">open Coffer in Nimiq Pay</a>${evmProvider() && !state.evm ? ' or <a href="#" id="connect">connect this browser’s wallet</a>' : ''}.</p>`
+}
+
 function statementView(): string {
   const f = fiat()
   const st = buildStatement(state.balances, state.prices ?? { usdt: {}, gold: {}, euro: {}, bitcoin: {}, nim: {} }, f)
-  const connected = state.evm !== null || state.nimiq !== null
   const bar = st.total > 0
     ? `<div class="bar" role="img" aria-label="Share of each holding in the total">${st.rows
         .filter((r) => (r.value ?? 0) > 0)
@@ -312,11 +341,7 @@ function statementView(): string {
         .join('')}</div>`
     : ''
   return `
-    ${
-      connected
-        ? ''
-        : `<p class="banner">Prices and quotes on this page are live. To see your own holdings and move savings, <a href="${OPEN_IN_PAY}">open Coffer in Nimiq Pay</a>${evmProvider() ? ' or <a href="#" id="connect">connect this browser’s wallet</a>' : ''}.</p>`
-    }
+    ${connectBanner()}
     ${state.connectNote ? `<p class="refusal" role="alert">${esc(state.connectNote)}</p>` : ''}
     <section class="total">
       <small>You hold</small>
@@ -378,7 +403,7 @@ function holdingView(): string {
             ${chips.map((c) => `<button data-chip="${c}">$${c}</button>`).join('')}
             ${state.evm ? `<button data-chip="max">All</button>` : ''}
           </div>
-          <p class="note" id="avail">${state.evm ? `Available: ${formatUnitsFixed(sellBal, sell.decimals, sell.display)} ${sell.symbol}` : `Smallest move: $${LIMITS.minUsd}.`}</p>
+          <p class="note" id="avail">${state.evm ? `Available: ${formatUnitsFixed(sellBal, sell.decimals, sell.display)} ${sell.symbol}.${sellBal > 0n ? '' : state.direction === 'in' ? ' Top up USDT in Nimiq Pay, then move it here. Any amount typed above shows a live price.' : ` Move USDT into ${t.label.toLowerCase()} first.`}` : `Smallest move: $${LIMITS.minUsd}.`}</p>
           <div id="quote"></div>`
     }`
 }
@@ -452,7 +477,7 @@ function activityView(): string {
 }
 
 function render(): void {
-  const who = state.evm ? shortAddress(state.evm.owner) : insideNimiqPay() ? 'Connecting…' : 'Live prices'
+  const who = state.evm ? shortAddress(state.evm.owner) : state.connecting ? 'Connecting…' : insideNimiqPay() ? 'Not connected' : 'Live prices'
   const body =
     state.view === 'holding' ? holdingView() : state.view === 'nim' ? nimView() : state.view === 'activity' ? activityView() : statementView()
   app.innerHTML = `

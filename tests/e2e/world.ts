@@ -48,6 +48,10 @@ export interface World {
   signed: string[]
   /** When set, the wallet rejects the next signature request. */
   rejectNext: boolean
+  /** When set, the wallet declines the next request to share its account. */
+  rejectConnect: boolean
+  /** Wallet requests that open a confirmation sheet in Nimiq Pay, in order. */
+  prompts: string[]
   submitted: { body: Record<string, unknown>; signer: Address }[]
   staked: { method: string; args: Record<string, unknown> }[]
   /** Polls answered "open" before the order is reported filled. */
@@ -116,6 +120,8 @@ export async function installWorld(page: Page, opts: { insidePay: boolean; userF
     nimLuna: [0, 250_000_000],
     signed: [],
     rejectNext: false,
+    rejectConnect: false,
+    prompts: [],
     submitted: [],
     staked: [],
     pollsBeforeFill: 1,
@@ -222,6 +228,14 @@ export async function installWorld(page: Page, opts: { insidePay: boolean; userF
     world.signed.push(data.primaryType)
     return account.signTypedData(data as unknown as Parameters<typeof account.signTypedData>[0])
   })
+  await page.exposeFunction('__coffer_prompt', (method: string): boolean => {
+    world.prompts.push(method)
+    if (method === 'eth_requestAccounts' && world.rejectConnect) {
+      world.rejectConnect = false
+      return false
+    }
+    return true
+  })
   await page.exposeFunction('__coffer_stake', (method: string, args: Record<string, unknown>) => {
     world.staked.push({ method, args })
     return 'f'.repeat(64)
@@ -233,12 +247,26 @@ export async function installWorld(page: Page, opts: { insidePay: boolean; userF
       ({ owner, wallet, htlc, fiat }) => {
         const w = window as unknown as Record<string, unknown>
         const call = (name: string, ...args: unknown[]) => (w[name] as (...a: unknown[]) => Promise<unknown>)(...args)
+        // Like Nimiq Pay, the wallet starts on Ethereum and signs chain-bound data only on the active chain.
+        let chain = '0x1'
         w.ethereum = {
           request: async ({ method, params }: { method: string; params?: unknown[] }) => {
-            if (method === 'eth_requestAccounts' || method === 'eth_accounts') return [owner]
-            if (method === 'eth_chainId') return '0x89'
-            if (method === 'wallet_switchEthereumChain') return null
+            if (method === 'eth_accounts') return [owner]
+            if (method === 'eth_requestAccounts') {
+              if (!(await call('__coffer_prompt', method))) throw Object.assign(new Error('User rejected the request'), { code: 4001 })
+              return [owner]
+            }
+            if (method === 'eth_chainId') return chain
+            if (method === 'wallet_switchEthereumChain') {
+              await call('__coffer_prompt', method)
+              chain = (params as { chainId: string }[])[0]!.chainId
+              return null
+            }
             if (method === 'eth_signTypedData_v4') {
+              const typed = JSON.parse((params as string[])[1]!) as { domain: { chainId?: number } }
+              if (typed.domain.chainId !== undefined && typed.domain.chainId !== Number(chain)) {
+                throw new Error(`Typed data chainId (${typed.domain.chainId}) doesn't match current chain (${Number(chain)})`)
+              }
               const sig = await call('__coffer_sign', (params as string[])[1])
               if (sig === null) throw Object.assign(new Error('User rejected the request'), { code: 4001 })
               return sig
