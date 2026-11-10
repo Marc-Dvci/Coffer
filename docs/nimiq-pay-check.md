@@ -20,6 +20,7 @@ submits it (`eth_simulateV1`), leaving the allowance at the signed amount.
 | EURe approval | `eth_signTypedData_v4`, `Permit`, chain-id domain | Signer matches. `permit` succeeds on mainnet, allowance set |
 | WBTC approval | `eth_signTypedData_v4`, `MetaTransaction`, salt domain | Signer matches. `executeMetaTransaction` succeeds, allowance set |
 | Order | `eth_signTypedData_v4`, `Order`, CoW settlement domain | Signer matches. The order book accepted the format and signature, and answered `InsufficientBalance` for the empty wallet |
+| Stake | `sendNewStakerTransaction`, 100 NIM to a pool | The wallet took the request and answered `Insufficient funds` for the empty wallet |
 | Reopen | none | The statement loads with no sheet: Nimiq Pay remembers the connection |
 
 ## What this settles
