@@ -10,7 +10,8 @@
     "test": "vitest run",
     "coverage": "vitest run --coverage",
     "e2e": "playwright test",
-    "live": "vitest run --config vitest.live.config.ts"
+    "live": "vitest run --config vitest.live.config.ts",
+    "shots": "playwright test --config playwright.shots.config.ts"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +25,7 @@
     "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "^1.65.0",
     "@vitest/coverage-v8": "^3.2.7",
+    "fast-check": "^4.10.2",
     "tsx": "^4.23.15",
     "typescript": "^5.9.3",
     "vite": "^6.4.6",
