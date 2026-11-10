@@ -58,6 +58,8 @@ export interface World {
   pollsBeforeFill: number
   expire: boolean
   userFiat: string
+  /** When set, CoinGecko answers 429 and prices come from the second source. */
+  coinGeckoBusy: boolean
 }
 
 const UID = `0x${'ab'.repeat(56)}`
@@ -127,6 +129,7 @@ export async function installWorld(page: Page, opts: { insidePay: boolean; userF
     pollsBeforeFill: 1,
     expire: false,
     userFiat: opts.userFiat ?? 'EUR',
+    coinGeckoBusy: false,
   }
   let lastOrder: Record<string, unknown> | null = null
   let polls = 0
@@ -135,7 +138,12 @@ export async function installWorld(page: Page, opts: { insidePay: boolean; userF
     const req = route.request().postDataJSON() as { method: string; params?: unknown[]; id: number }
     await json(route, { jsonrpc: '2.0', id: req.id, result: answerRpc(world, req) })
   })
-  await page.route(/api\.coingecko\.com/, (route) => json(route, PRICES))
+  await page.route(/api\.coingecko\.com/, (route) => (world.coinGeckoBusy ? json(route, {}, 429) : json(route, PRICES)))
+  await page.route(/coins\.llama\.fi/, (route) =>
+    json(route, {
+      coins: Object.fromEntries(Object.entries(PRICES).map(([id, p]) => [`coingecko:${id}`, { price: p.usd }])),
+    }),
+  )
   await page.route(/validators/, (route) => json(route, VALIDATORS))
   await page.route(/rpc\.nimiqwatch\.com/, (route) =>
     json(route, { jsonrpc: '2.0', id: 1, error: { code: -32603, message: 'Internal error', data: 'No staker' } }),

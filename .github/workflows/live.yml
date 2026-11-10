@@ -1,0 +1,33 @@
+name: Live checks
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Stop after the results date
+        id: window
+        run: |
+          if [ "$(date -u +%Y%m%d)" -gt 20261130 ]; then echo "open=false" >> "$GITHUB_OUTPUT"; else echo "open=true" >> "$GITHUB_OUTPUT"; fi
+      - uses: actions/checkout@v4
+        if: steps.window.outputs.open == 'true'
+      - uses: actions/setup-node@v4
+        if: steps.window.outputs.open == 'true'
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+        if: steps.window.outputs.open == 'true'
+      - name: Live page answers
+        if: steps.window.outputs.open == 'true'
+        run: curl --fail --silent --show-error --location https://marc-dvci.github.io/Coffer/ | grep -q "Coffer"
+      - name: Polygon mainnet, CoW order book and validators API
+        if: steps.window.outputs.open == 'true'
+        run: npm run live

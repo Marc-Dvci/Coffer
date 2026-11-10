@@ -8,7 +8,7 @@
     "preview": "vite preview --host",
     "typecheck": "tsc",
     "test": "vitest run",
-    "coverage": "vitest run --coverage",
+    "coverage": "vitest run --coverage --reporter=default --reporter=json --outputFile.json=coverage/unit-results.json",
     "e2e": "playwright test",
     "live": "vitest run --config vitest.live.config.ts",
     "shots": "playwright test --config playwright.shots.config.ts"

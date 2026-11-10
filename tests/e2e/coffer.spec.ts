@@ -228,3 +228,16 @@ test.describe('inside Nimiq Pay', () => {
     await expectAccessible(page)
   })
 })
+
+test.describe('when CoinGecko is rate limited', () => {
+  test('prices come from the second source, the screen names it, and a move still settles', async ({ page }) => {
+    const world = await installWorld(page, { insidePay: true, userFiat: 'EUR' })
+    world.coinGeckoBusy = true
+    await page.goto('./')
+    await expect(page.getByText('Values use DefiLlama prices in EUR.')).toBeVisible()
+    await openGold(page, '25')
+    await expect(page.getByText('Against the DefiLlama price')).toBeVisible()
+    await page.getByRole('button', { name: 'Sign and move' }).click()
+    await expect(page.getByText('Moved.')).toBeVisible({ timeout: 20_000 })
+  })
+})

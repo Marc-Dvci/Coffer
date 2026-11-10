@@ -3,7 +3,7 @@
 [![CI](https://github.com/Marc-Dvci/Coffer/actions/workflows/ci.yml/badge.svg)](https://github.com/Marc-Dvci/Coffer/actions/workflows/ci.yml)
 [![Live checks](https://github.com/Marc-Dvci/Coffer/actions/workflows/live.yml/badge.svg)](https://github.com/Marc-Dvci/Coffer/actions/workflows/live.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-0b6b52.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-272%20unit%20%C2%B7%2017%20browser%20%C2%B7%209%20live-0b6b52.svg)](#tests)
+[![Tests](https://img.shields.io/badge/tests-290%20unit%20%C2%B7%2018%20browser%20%C2%B7%209%20live-0b6b52.svg)](#tests)
 [![Core coverage](https://img.shields.io/badge/decision%20core-100%25%20lines%20%C2%B7%2097%25%20branches-0b6b52.svg)](#tests)
 
 <p align="center">
@@ -119,7 +119,7 @@ order signature.
 | Smallest move | $1 | "The smallest move is $1." |
 | Network fee | At most 3% of the amount | "The network fee would take 3.4% of this amount. Move a larger amount." |
 | Gap to the CoinGecko price | At most 1.5% below | "This quote is 4.0% below the market price. Move a smaller amount." |
-| Reference price | Required | "The market price is unavailable, so this quote cannot be checked." |
+| Reference price | Required. CoinGecko, then DefiLlama if CoinGecko is rate limited | "The market price is unavailable, so this quote cannot be checked." |
 | Balance | Amount within the balance | "This is more than the wallet holds." |
 | Approval | Exactly the amount moved, valid for one hour | |
 | Order | Fill or expire in 20 minutes, 0.5% slippage, owner is the receiver | |
@@ -132,8 +132,8 @@ promises no return; the note under each holding says the price moves both ways.
 
 | Suite | Count | Command | What it covers |
 |---|---|---|---|
-| Unit | 272 | `npm test` | The decision core, in random order, with a fake clock and real signatures |
-| Browser | 17 | `npm run e2e` | Every screen in Chromium at phone size, with a wallet that behaves like Nimiq Pay, and an axe-core scan |
+| Unit | 290 | `npm test` | The decision core, in random order, with a fake clock and real signatures |
+| Browser | 18 | `npm run e2e` | Every screen in Chromium at phone size, with a wallet that behaves like Nimiq Pay, and an axe-core scan |
 | Live | 9 | `npm run live` | Polygon mainnet, the CoW order book and the validators API |
 
 Decision core coverage (`npm run coverage`), with a CI floor of 90% lines and 80% branches:
@@ -150,7 +150,7 @@ Decision core coverage (`npm run coverage`), with a CI floor of 90% lines and 80
 | staking.ts | 100% | 100% |
 | statement.ts | 100% | 100% |
 | tokens.ts | 100% | 100% |
-| **Total** | **100%** | **97.2%** |
+| **Total** | **100%** | **97.5%** |
 
 | Claim | Code | Test |
 |---|---|---|
@@ -175,7 +175,7 @@ git clone https://github.com/Marc-Dvci/Coffer.git
 cd Coffer
 npm ci
 npm run dev        # http://localhost:5173, live prices and quotes, no keys
-npm test           # 272 unit tests
+npm test           # 290 unit tests
 npx playwright install chromium
 npm run build && npm run e2e
 ```
